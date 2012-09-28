@@ -1,0 +1,60 @@
+S ::= ( Stmt ";" )+ <EOF>
+
+
+Stmt ::= Print
+       | Execute
+       | Foreach
+       | If
+       | Listener
+       | Broker
+       | Condition
+       | Action
+       | Situation
+
+Print ::= "print" ( PrintCatenation )+
+
+PrintCatenation ::= PrintExpr [ ( "+" PrintExpr )+ ]
+
+
+PrintExpr ::= VarExpr
+            | <STRING>
+
+
+VarExpr ::= <ID> [ "." <ID> ]
+
+Execute ::= "execute" <ID> "as" <STRING> [ Params ]
+
+
+Params ::= ( Param )+
+
+Param ::= VarExpr
+        | <STRING>
+
+Foreach ::= "foreach" <ID> "in" VarExpr Block
+
+Block ::= "{" ( Stmt ";" )+ "}"
+
+If ::= "if" Expr Block
+
+Listener ::= "listener" <ID> "for" <STRING> "in" <ID>
+
+Broker ::= "broker" <ID> "is" <STRING>
+
+Condition ::= "condition" <ID> "is" Expr "within" <DIGITS>
+Expr ::= VarExpr [ Conditional ]
+       | NotConditional
+       | "(" Expr ")"
+
+Conditional ::= OrConditional
+              | AndConditional
+NotConditional ::= "not" Expr
+
+OrConditional ::= "or" Expr
+
+AndConditional ::= "and" Expr
+Action ::= "action" <ID> "is" Block
+
+Situation ::= "when" <ID> "do" List
+List ::= VarExpr [ ( "," VarExpr )+ ]
+
+

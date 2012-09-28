@@ -1,0 +1,43 @@
+# define an event broker to bind to.  
+# multiple brokers would be allowed.
+broker jmx is "jmx://localhost:9999";
+broker inputDir is "file:///temp/input";
+
+# Set up listeners for events in our brokers
+listener event1 for "edu.unf.epl:type=EventProducer!DifferentNotification" in jmx;
+listener event2 for "edu.unf.epl:type=EventProducer2!TestNotification" in jmx;
+listener event3 for "testfile.txt" in inputDir;
+
+# Create conditions when events occur
+condition both5 is (event1 and event2) within 5000;
+condition both10 is (event1 and event2) within 10000;
+condition event1Only is (event1 and not event2) within 5000;
+condition event2Only is (event2 and not event1) within 5000;
+condition filefound is event3 within 5000;
+
+# define actions
+action printonly is {
+	foreach event in events {
+		print event.time + ": " + event.text;
+	};
+};
+
+action runscript is {
+	foreach event in events {
+		execute result as "c:\temp\test.bat" "Time: " event.time " Text: " event.text;
+		if (result.success) {
+			print "SUCCESS: " + result.output;
+		};
+		
+		if (not result.success) {
+			print "ERROR: " + result.error;
+		};
+	};
+};
+
+# when conditions occur, execute actions
+when both5 do printonly;
+#when event1Only do printonly;
+#when event2Only do printonly;
+#when both10 do printonly;
+#when filefound do runscript;

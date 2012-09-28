@@ -1,0 +1,20 @@
+<events>
+  <event
+    domain="edu.unf.epl"
+    type="EventProducer"
+    notificationType="DifferentNotification"
+    message="the first message"
+    repeat="false"
+    repeatTime="0"
+    repeatCount="0"
+  />
+  <event
+    domain="edu.unf.epl"
+    type="EventProducer2"
+    notificationType="TestNotification"
+    message="the second message"
+    repeat="false"
+    repeatTime="0"
+    repeatCount="0"
+  />
+</events>

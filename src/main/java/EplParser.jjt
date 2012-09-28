@@ -1,0 +1,283 @@
+
+options {
+  LOOKAHEAD = 2;
+  FORCE_LA_CHECK = true;
+  MULTI=true;
+  NODE_EXTENDS="MyNode";
+  NODE_PACKAGE="org.epl.parser";
+  OUTPUT_DIRECTORY="org/epl/parser";
+}
+
+PARSER_BEGIN(EplParser)
+package org.epl.parser;
+
+public class EplParser {
+	public static boolean debug = Boolean.getBoolean("epl.debug");
+	
+    public static void main(String args[]) throws ParseException {
+        EplParser parser = new EplParser(System.in);
+        /* This is a call to any nonterminal; use the start symbol */
+        parser.S();
+    }
+}
+
+PARSER_END(EplParser)
+
+SKIP :
+{
+  " "
+| "\t"
+| "\n"
+| "\r"
+}
+
+/* Reserved words first, so they're identified as such (and not IDs) */
+TOKEN :
+{
+  < EXECUTE:   "execute" >
+| < LISTENER:  "listener" >
+| < CONDITION: "condition" >
+| < ACTION:    "action" >
+| < FOREACH:   "foreach" >
+| < BLOCK:     "block" >
+| < BROKER:    "broker" >
+| < PRINT:     "print" >
+| < FOR:       "for" >
+| < IN:        "in" >
+| < IS:        "is" >
+| < WHEN:      "when" >
+| < DO:        "do" >
+| < IF:        "if" >
+| < WITHIN:    "within" >
+| < OR:		   "or" >
+| < AND:	   "and" >
+| < NOT:	   "not" >
+| < AS:	       "as" >
+}
+
+TOKEN :
+{
+  < ID: ["A"-"Z","a"-"z"] ( ["A"-"Z","a"-"z","0"-"9"] )* > 
+| < STRING: "\"" (~["\""])* "\"" >
+| < DIGITS: ["1"-"9"] ( ["0"-"9"] )* >
+}
+
+/* This allows a comment anywhere on the line, not just the first column
+ * The comment continues to the end of the line
+ */
+/* SPECIAL_TOKENs are skipped (ignored) but are capable of being retrieved 
+ * That's how the Java grammar does comments */
+SPECIAL_TOKEN : /* COMMENTS */
+{
+  <LINE_COMMENT: "#" (~["\n","\r"])* ("\n"|"\r"|"\r\n")>
+}
+
+/* Here are the method definitions */
+
+/* Start symbol */
+void S() :
+{}
+{
+    { if (debug) System.out.println("Entering S() method"); }
+    ( Stmt() ";" )+ <EOF>
+    { if (debug) System.out.println("Leaving S() method"); }
+}
+
+void Stmt() :
+{}
+{
+    { if (debug) System.out.println("Entering Stmt() method"); }
+    Print() 
+  | Execute()
+  | Foreach() 
+  | If()
+  | Listener() 
+  | Broker() 
+  | Condition() 
+  | Action() 
+  | Situation() 
+    { if (debug) System.out.println("Leaving Stmt() method"); }
+}
+
+void Execute() :
+{ Token t1, t2; }
+{
+    { if (debug) System.out.println("Entering Execute() method"); }
+    "execute" t1 = <ID> { jjtThis.returnVar = t1.image; }
+    "as" t2 = <STRING> { jjtThis.literalString = t2.image; } [ Params() ]
+    { if (debug) System.out.println("Leaving Execute() method"); }
+}
+
+void Param() :
+{ Token t1; }
+{
+    { if (debug) System.out.println("Entering Param() method"); }
+    VarExpr()
+    | t1 = <STRING> { jjtThis.literalString = t1.image; }
+
+    { if (debug) System.out.println("Leaving Param() method"); }
+}
+
+void Params() :
+{}
+{
+    { if (debug) System.out.println("Entering Params() method"); }
+    ( Param() )+
+    { if (debug) System.out.println("Leaving Params() method"); }
+}
+
+void Listener() :
+{ Token t1, t2, t3; }
+{
+    { if (debug) System.out.println("Entering Listener() method"); }
+    "listener" t1 = <ID> { jjtThis.name = t1.image; } 
+    "for" t2 = <STRING> { jjtThis.eventType = t2.image; } 
+    "in" t3 = <ID> {jjtThis.broker = t3.image; }
+    { if (debug) System.out.println("Leaving Listener() method"); }
+}
+
+void Broker() :
+{ Token t1, t2; }
+{
+    { if (debug) System.out.println("Entering Broker() method"); }
+    "broker" t1 = <ID> { jjtThis.name = t1.image; } 
+    "is" t2 = <STRING> { jjtThis.connectString = t2.image; }
+    { if (debug) System.out.println("Leaving Broker() method"); }
+}
+
+void Print() :
+{}
+{
+    { if (debug) System.out.println("Entering Print() method"); }
+    "print" ( PrintCatenation() )+
+    { if (debug) System.out.println("Leaving Print() method"); }
+}
+
+void PrintCatenation() :
+{}
+{
+	PrintExpr() [ ( "+" PrintExpr() )+ ]
+}
+
+void PrintExpr() :
+{ Token t1; }
+{
+   VarExpr()
+ | t1 = <STRING> { jjtThis.literalString = t1.image; }
+}
+
+void Expr() :
+{}
+{
+    { if (debug) System.out.println("Entering Expr() method"); }  
+  VarExpr() [ Conditional() ]
+  | NotConditional()
+  | "(" Expr() ")"
+    { if (debug) System.out.println("Leaving Expr() method"); }
+}
+
+void VarExpr() :
+{ Token t1, t2; }
+{
+    { if (debug) System.out.println("Entering VarExpr() method"); }
+  t1 = <ID> { jjtThis.name = t1.image; } 
+  [ "." t2 = <ID> { jjtThis.member = t2.image; } ]
+    { if (debug) System.out.println("Leaving VarExpr() method"); }
+}
+
+void Condition() :
+{ Token t1, t2; }
+{
+    { if (debug) System.out.println("Entering Condition() method"); }
+    "condition" t1 = <ID> { jjtThis.name = t1.image; }
+    "is" Expr()
+    "within" t2 = <DIGITS> { jjtThis.timeout = t2.image; }
+    { if (debug) System.out.println("Leaving Condition() method"); }
+}
+
+void Conditional() :
+{}
+{
+    { if (debug) System.out.println("Entering Conditional() method"); }
+    OrConditional() 
+  | 
+  	AndConditional()
+    { if (debug) System.out.println("Leaving Conditional() method"); }
+}
+
+void NotConditional() :
+{}
+{
+    { if (debug) System.out.println("Entering NotConditional() method"); }
+   "not" Expr() 
+    { if (debug) System.out.println("Leaving NotConditional() method"); }
+}
+
+void OrConditional() :
+{}
+{
+    { if (debug) System.out.println("Entering OrConditional() method"); }
+   "or" Expr() 
+    { if (debug) System.out.println("Leaving OrConditional() method"); }
+}
+
+void AndConditional() :
+{}
+{
+    { if (debug) System.out.println("Entering AndConditional() method"); }
+    "and" Expr() 
+    { if (debug) System.out.println("Leaving AndConditional() method"); }
+}
+
+/* Change:  allow empty block; i.e. {} */
+void Block() :
+{}
+{
+    { if (debug) System.out.println("Entering Block() method"); }
+    "{" ( Stmt() ";" )+ "}" 
+    { if (debug) System.out.println("Leaving Block() method"); }
+}
+
+void Action() :
+{ Token t1; }
+{
+    { if (debug) System.out.println("Entering Action() method"); }
+    "action" t1 = <ID> { jjtThis.name = t1.image; } 
+    "is" Block() 
+    { if (debug) System.out.println("Leaving Action() method"); }
+}
+
+void List() :
+{}
+{
+    { if (debug) System.out.println("Entering List() method"); }
+    VarExpr() [ ( "," VarExpr() )+ ] 
+    { if (debug) System.out.println("Leaving List() method"); }
+}
+
+void Situation() :
+{ Token t1; }
+{
+    { if (debug) System.out.println("Entering Situation() method"); }
+    "when" t1 = <ID> { jjtThis.condition = t1.image; } 
+    "do" List() 
+    { if (debug) System.out.println("Leaving Situation() method"); }
+}
+
+void Foreach() :
+{ Token t1; }
+{
+    { if (debug) System.out.println("Entering Foreach() method"); }
+    "foreach" t1 = <ID> { jjtThis.forEachContainedThing = t1.image; }
+    "in" VarExpr()
+	Block() 
+    { if (debug) System.out.println("Leaving Foreach() method"); }
+}
+
+void If() :
+{}
+{
+    { if (debug) System.out.println("Entering If() method"); }
+    "if" Expr() Block() 
+    { if (debug) System.out.println("Leaving If() method"); }
+}

@@ -1,0 +1,15 @@
+# test the print command
+
+# a bare string
+#print bare;
+
+# a simple string
+print "simple";
+
+# concatenations
+print "two " + "items";
+print "three" + " " + "items";
+
+# variables; need to find out how to evaluate event.time...
+#print event.time
+

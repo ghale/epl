@@ -1,0 +1,14 @@
+broker jmx is "jmx://localhost9999";
+
+listener event1 for "edu.unf.epl:type=EventProducer2444!DifferentNotification" in jmx;
+
+condition c1 is event1 within 5000;
+
+action printit is {
+	foreach event in events {
+		print "Time: " + event.time;
+		print "Text: " + event.text;
+	};
+};
+
+when c1 do printit;

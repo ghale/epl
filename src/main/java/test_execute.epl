@@ -1,0 +1,11 @@
+# test the execute command
+# Note:  comment out the statments for the platform you aren't using
+
+# UNIX format
+execute "/usr/bin/ls" "-l";
+execute "/usr/bin/touch" "/tmp/execute_test.txt";
+execute "/usr/bin/ls" "-l" "/" ">" "/tmp/execute_listing.txt";
+
+# Windows format
+execute "c:\winnt\system32\tree.com" "c:\";
+

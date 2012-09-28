@@ -1,0 +1,30 @@
+# define an event broker to bind to.  
+# multiple brokers would be allowed.
+#broker jmx is "host1:4000";
+
+# Set up listeners for events in our broker 
+listener event1 for "somevent" in jmx;
+listener event2 for "anotherevent" in jmx;
+
+# Create conditions when events occur
+#condition both is (event1 & event2);
+#condition either is (event1 | event2);
+
+# define actions
+action printonly is {
+	foreach event in events {
+		print event.time + ":" + event.text;
+	};
+};
+
+action runscript is {
+	foreach event in events {
+		if event.triggered {
+			execute "somescript" event.text event.time;
+		};
+	};
+};
+
+# when conditions occur, execute actions
+when either do printonly;
+when both do printonly, runscript;

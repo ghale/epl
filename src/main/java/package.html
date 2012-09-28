@@ -1,0 +1,99 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
+<html>
+<head></head>
+<body bgcolor="white">
+
+EPL - Event Processing Language
+
+<h2>Package Specification</h2>
+
+##### FILL IN ANY SPECS NEEDED BY JAVA COMPATIBILITY KIT #####
+<ul>
+  <li><a href="">##### REFER TO ANY FRAMEMAKER SPECIFICATION HERE #####</a>
+</ul>
+
+<h2>Related Documentation</h2>
+
+<h3>Grammar</h3>
+
+The EPL grammar is specified in the source file <code>EplParser.jjt</code>.  The following diagrams illustrate the grammar.
+
+<h4>Nonterminals</h4>
+<pre>
+{@link ASTS S} ::= ( {@link ASTStmt Stmt} ";" )+
+
+{@link ASTStmt Stmt} ::= {@link ASTPrint Print}
+       | {@link ASTExecute Execute}
+       | {@link ASTForeach Foreach}
+       | {@link ASTIf If}
+       | {@link ASTListener Listener}
+       | {@link ASTBroker Broker}
+       | {@link ASTCondition Condition}
+       | {@link ASTAction Action}
+       | {@link ASTSituation Situation}
+
+{@link ASTPrint Print} ::= "print" ( {@link ASTPrintCatenation PrintCatenation} )+
+
+{@link ASTPrintCatenation PrintCatenation} ::= {@link ASTPrintExpr PrintExpr} [ ( "+" {@link ASTPrintExpr PrintExpr} )+ ]
+
+{@link ASTPrintExpr PrintExpr} ::= {@link ASTVarExpr VarExpr}
+            | &lt;STRING&gt;
+
+{@link ASTVarExpr VarExpr} ::= &lt;ID&gt; [ "." &lt;ID&gt; ]
+
+{@link ASTExecute Execute} ::= "execute" &lt;ID&gt; "as" &lt;STRING&gt; [ {@link ASTParams Params} ]
+
+{@link ASTParams Params} ::= ( {@link ASTParam Param} )+
+
+{@link ASTParam Param} ::= {@link ASTVarExpr VarExpr}
+        | &lt;STRING&gt;
+
+{@link ASTForeach Foreach} ::= "foreach" &lt;ID&gt; "in" {@link ASTVarExpr VarExpr} {@link ASTBlock Block}
+
+{@link ASTBlock Block} ::= "{" ( {@link ASTStmt Stmt} ";" )+ "}"
+
+{@link ASTIf If} ::= "if" {@link ASTExpr Expr} {@link ASTBlock Block}
+
+{@link ASTListener Listener} ::= "listener" &lt;ID&gt; "for" &lt;STRING&gt; "in" &lt;ID&gt;
+
+{@link ASTBroker Broker} ::= "broker" &lt;ID&gt; "is" &lt;STRING&gt;
+
+{@link ASTCondition Condition} ::= "condition" &lt;ID&gt; "is" {@link ASTExpr Expr} "within" &lt;DIGITS&gt;
+
+{@link ASTExpr Expr} ::= {@link ASTVarExpr VarExpr} [ {@link ASTConditional Conditional} ]
+       | {@link ASTNotConditional NotConditional}
+       | "(" {@link ASTExpr Expr} ")"
+
+{@link ASTConditional Conditional} ::= {@link ASTOrConditional OrConditional}
+              | {@link ASTAndConditional AndConditional}
+
+{@link ASTNotConditional NotConditional} ::= "not" {@link ASTExpr Expr}
+
+{@link ASTOrConditional OrConditional} ::= "or" {@link ASTExpr Expr}
+
+{@link ASTAndConditional AndConditional} ::= "and" {@link ASTExpr Expr}
+
+{@link ASTAction Action} ::= "action" &lt;ID&gt; "is" {@link ASTBlock Block}
+
+{@link ASTSituation Situation} ::= "when" &lt;ID&gt; "do" {@link ASTList List}
+
+{@link ASTList List} ::= {@link ASTVarExpr VarExpr} [ ( "," {@link ASTVarExpr VarExpr} )+ ]
+</pre>
+
+<h4>Terminals</h4>
+<pre>
+ ID: ["A"-"Z","a"-"z"] ( ["A"-"Z","a"-"z","0"-"9"] )*
+
+ STRING: "\"" (~["\""])* "\""
+
+ DIGITS: ["1"-"9"] ( ["0"-"9"] )*
+</pre>
+
+<ul>
+  <li><a href="">##### REFER TO NON-SPEC DOCUMENTATION HERE #####</a>
+</ul>
+
+<!-- Put @see and @since tags down here. -->
+
+</body>
+</html>
